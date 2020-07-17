@@ -3,11 +3,15 @@ package com.example.realm
 import io.realm.Realm
 import io.realm.RealmObject
 import io.realm.annotations.PrimaryKey
+import java.util.*
 
 open class ListObject : RealmObject() {
     @PrimaryKey
     var id: Long = System.currentTimeMillis()
     var title = ""
+    var hasCompleted = false
+
+//    var completedAt: Date? = null
 
     companion object {
         fun findAll(): List<ListObject> =
@@ -18,6 +22,13 @@ open class ListObject : RealmObject() {
                         realm.copyFromRealm(it)
                     }
             }
+        // 未完了のタスク
+        fun findToDoAll(): List<ListObject> =
+            findAll().filterNot { it.hasCompleted }
+
+        // 完了したタスク
+        fun findCompletedAll(): List<ListObject> =
+            findAll().filter { it.hasCompleted }
 
         fun delete(data: ListObject) {
             Realm.getDefaultInstance().use {

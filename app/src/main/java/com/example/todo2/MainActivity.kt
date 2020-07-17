@@ -6,26 +6,27 @@ import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.EditText
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentActivity
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.viewpager2.adapter.FragmentStateAdapter
 import com.example.realm.ListObject
+import com.google.android.material.tabs.TabLayout
+import com.google.android.material.tabs.TabLayoutMediator
 import io.realm.Realm
 import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
 
+    private val viewPagerAdapter by lazy { TodoViewPagerAdapter(this) }
 
-    private val customAdapter by lazy { CustomAdapter(this) }
+    private var index : Int? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         initialize()
-        initData()
-
-        val childFragment= ChildFragment()
-        val transaction = supportFragmentManager.beginTransaction()
-        transaction.add(R.id.container,childFragment)
-        transaction.commit()
+//        var result = 1 + index!!
     }
 
     private fun initialize() {
@@ -33,69 +34,33 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun initLayout() {
-        initClick()
-        initRecyclerView()
+        initViewPager2()
+        initTabLayout()
     }
 
-    private fun initClick() {
-        fab.setOnClickListener {
-            addMemo()
+    private fun initViewPager2() {
+        viewPager2.apply {
+            adapter = viewPagerAdapter
         }
     }
 
-    private fun initRecyclerView() {
-        customAdapter.callback = object : CustomAdapter.CustomAdapterCallback {
-            override fun onClick(data: ListObject) {
-                deleteMemo(data)
-            }
-        }
-        memoRecyclerView.apply {
-            adapter = customAdapter
-            layoutManager = LinearLayoutManager(this@MainActivity)
-        }
+    private fun initTabLayout() {
+        TabLayoutMediator(tabLayout, viewPager2) { tab: TabLayout.Tab, position: Int ->
+            tab.text = viewPagerAdapter.items[position].title
+        }.attach()
     }
 
-    private fun addMemo() {
-        val editText = EditText(this).apply {
-            hint = "やることを入力"
-        }
-        AlertDialog.Builder(this)
-            .setMessage("ここに入力")
-            .setView(editText)
-            .setPositiveButton("すぐやれよ") { _, _ ->
-                saveMemo(editText.text.toString())
-            }
-            .show()
-    }
+    class TodoViewPagerAdapter(fragmentActivity: FragmentActivity) :
+        FragmentStateAdapter(fragmentActivity) {
 
+        val items: List<Item> =
+            listOf(Item(ToDoFragment(), "未完了タスク"), Item(CompletedToDoFragment(), "完了タスク"))
 
-    private fun saveMemo(memoTitle: String) {
-        Realm.getDefaultInstance().use {
-            it.executeTransaction { realm ->
-                realm.insertOrUpdate(ListObject().apply {
-                    title = memoTitle
-                })
-            }
-        }
-        initData()
-    }
-   private fun send{
-       ChildFragment().apply {
-           aragumets = BUndle().apply{
-               putString(ChildFragment.title)
-           }
-       }
+        override fun getItemCount(): Int = items.size
 
-   }
+        override fun createFragment(position: Int): Fragment = items[position].fragment
 
-    private fun deleteMemo(data: ListObject) {
-        ListObject.delete(data)
-        initData()
-    }
-
-    private fun initData() {
-        val list = ListObject.findAll()
-        customAdapter.refresh(list)
+        class Item(val fragment: Fragment, val title: String)
     }
 }
 
