@@ -8,7 +8,7 @@ import java.util.*
 open class ListObject : RealmObject() {
     @PrimaryKey
     var id: Long = System.currentTimeMillis()
-    var title = ""
+    var edit_text = ""
     var hasCompleted = false
 
 //    var completedAt: Date? = null
