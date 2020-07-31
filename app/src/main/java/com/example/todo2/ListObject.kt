@@ -9,6 +9,7 @@ open class ListObject : RealmObject() {
     @PrimaryKey
     var id: Long = System.currentTimeMillis()
     var edit_text = ""
+    var done_edit_text = ""
     var hasCompleted = false
 
 //    var completedAt: Date? = null
@@ -22,6 +23,7 @@ open class ListObject : RealmObject() {
                         realm.copyFromRealm(it)
                     }
             }
+
         // 未完了のタスク
         fun findToDoAll(): List<ListObject> =
             findAll().filterNot { it.hasCompleted }
@@ -41,5 +43,6 @@ open class ListObject : RealmObject() {
                     }
             }
         }
+
     }
 }

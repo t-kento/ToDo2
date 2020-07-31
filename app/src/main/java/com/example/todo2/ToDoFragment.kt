@@ -21,6 +21,7 @@ class ToDoFragment : Fragment() {
 
     private val toDoAdapter by lazy { ToDoAdapter(requireContext()) }
 
+    private var fragmentCallback: FragmentCallback? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -33,7 +34,12 @@ class ToDoFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         initialize()
+    }
 
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        if (context is FragmentCallback)
+            fragmentCallback = context
     }
 
     private fun initialize() {
@@ -54,8 +60,12 @@ class ToDoFragment : Fragment() {
 
     private fun initRecyclerView() {
         toDoAdapter.callback = object : ToDoAdapter.ToDoAdapterCallback {
-            override fun onClick(data: ListObject) {
+            override fun onClickDelete(data: ListObject) {
                 deleteMemo(data)
+            }
+
+            override fun onClickDone(data: ListObject) {
+                doneMemo(data)
             }
         }
         memoRecyclerView.apply {
@@ -67,37 +77,60 @@ class ToDoFragment : Fragment() {
     private fun addMemo() {
         val editText = EditText(requireContext()).apply {
             hint = "やること"
+            println("間違い探し")
         }
         AlertDialog.Builder(requireContext())
             .setTitle("やることを決める")
-            .setMessage("はやくやれよ")
+            .setMessage("はやく")
             .setView(editText)
             .setPositiveButton("頑張れ") { _, _ ->
+                println("間違い探し4")
+                println("$editText")
                 saveMemo(editText.text.toString())
             }
             .show()
+        println("間違い探し2")
+
     }
 
     private fun saveMemo(memoTitle: String) {
+        println("間違い探し5")
+        println("${memoTitle}2")
         Realm.getDefaultInstance().use {
             it.executeTransaction { realm ->
                 realm.insertOrUpdate(ListObject().apply {
                     edit_text = memoTitle
+                    done_edit_text = memoTitle
                 })
             }
         }
         initData()
+        println("間違い探し3")
+        println("${memoTitle}")
     }
+
 
     private fun deleteMemo(data: ListObject) {
         ListObject.delete(data)
         initData()
     }
 
+    private fun doneMemo(data: ListObject) {
+        Realm.getDefaultInstance().use {
+            it.executeTransaction { realm ->
+                realm.insertOrUpdate(data.apply {
+                    hasCompleted = true
+                })
+            }
+        }
+        fragmentCallback?.onCompleted()
+        initData()
+    }
+
     private fun initData() {
-        val list=ListObject.findAll()
+        val list = ListObject.findToDoAll()
         toDoAdapter.refresh(list)
-       // toDoAdapter.refresh(ListObject.findToDoAll())
+        // toDoAdapter.refresh(ListObject.findToDoAll())
     }
 
 

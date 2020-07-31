@@ -13,7 +13,7 @@ class ToDoAdapter(val context: Context) : RecyclerView.Adapter<RecyclerView.View
     private val items = mutableListOf<ListObject>()
 
     var callback: ToDoAdapterCallback? = null
-    var a=0
+
 
     fun refresh(list: List<ListObject>) {
         items.apply {
@@ -40,13 +40,11 @@ class ToDoAdapter(val context: Context) : RecyclerView.Adapter<RecyclerView.View
         holder.apply {
             edit_text.text = data.edit_text
             deleteButton.setOnClickListener{
-                callback?.onClick(data)
+                callback?.onClickDelete(data)
             }
             doneButton.setOnClickListener{
-                a=1
-                callback?.onClick(data)
+                callback?.onClickDone(data)
             }
-
         }
     }
 
@@ -56,7 +54,8 @@ class ToDoAdapter(val context: Context) : RecyclerView.Adapter<RecyclerView.View
         val doneButton=view.doneButton
     }
     interface ToDoAdapterCallback{
-        fun onClick(data: ListObject)
+        fun onClickDelete(data: ListObject)
+        fun onClickDone(data: ListObject)
     }
 
 

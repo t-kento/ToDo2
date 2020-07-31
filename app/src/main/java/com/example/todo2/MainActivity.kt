@@ -1,22 +1,15 @@
 package com.example.todo2
 
-import android.app.Activity
-import android.app.AlertDialog
-import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.widget.EditText
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
-import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.viewpager2.adapter.FragmentStateAdapter
-import com.example.realm.ListObject
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
-import io.realm.Realm
 import kotlinx.android.synthetic.main.activity_main.*
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity() ,FragmentCallback{
 
     private val viewPagerAdapter by lazy { TodoViewPagerAdapter(this) }
 
@@ -61,6 +54,18 @@ class MainActivity : AppCompatActivity() {
         override fun createFragment(position: Int): Fragment = items[position].fragment
 
         class Item(val fragment: Fragment, val title: String)
+    }
+
+    override fun onCompleted() {
+        println("押されました")
+        println("${title}です")
+       viewPagerAdapter.items.firstOrNull{it.fragment is CompletedToDoFragment}?.also {
+           if (it.fragment is CompletedToDoFragment)
+               it.fragment.updateTasks()
+       }
+    }
+
+    override fun onCanceled() {
     }
 }
 
